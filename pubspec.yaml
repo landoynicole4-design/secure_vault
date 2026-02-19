@@ -1,0 +1,43 @@
+name: secure_vault
+description: SecureVault Identity System - Secure Mobile Lab Exercise
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.3
+
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+
+  # Facebook Sign-In
+  flutter_facebook_auth: ^7.1.1
+
+  # Secure Storage
+  flutter_secure_storage: ^9.2.4
+
+  # Biometrics
+  local_auth: ^2.3.0
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "932367678456",
+    "project_id": "vault-ae5cb",
+    "storage_bucket": "vault-ae5cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932367678456:android:66d6d1d9496c0b4660f40d",
+        "android_client_info": {
+          "package_name": "com.example.secure_vault"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932367678456-b4m40jq8j4b8qqjr5jn2th371v38popk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyhkn3-Is-06g6ug99Y_SdjNraXkw3F_A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932367678456-b4m40jq8j4b8qqjr5jn2th371v38popk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
