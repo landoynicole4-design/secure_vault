@@ -1,35 +1,38 @@
-# 🔐 Secure Vault
-A Flutter authentication app with Firebase.
+# 🔐 SecureVault Identity System
 
-## 👥 Team Members & Roles
+A secure Flutter mobile application implementing MVVM architecture with
+Firebase Authentication, Google Sign-In, Facebook Login, Biometric Authentication,
+and Secure Storage.
 
-| Member | Name | Role | Responsibilities |
-|--------|------|------|-----------------|
-| M1 | Christian Ville Ranque | Lead Architect & Navigation | Project setup, routing, state configuration |
-| M2 | Antonio Uy | Core Auth Developer | AuthViewModel, registration/login logic, state management |
-| M3 | Joemarie Estologa | Security Engineer | Secure storage, biometrics, password validation |
-| M4 | Stephen Pusta | UI/UX Designer | LoginView, RegisterView, ProfileView, UI feedback |
-| M5 | Nicole James Landoy | Integration Specialist | Google Sign-In, Facebook Login, QA & data persistence |
+## 👥 Group Members
+| Member | Name | Role |
+|--------|------|------|
+| M1 | Christian Ville Ranque | Lead Architect & Navigation |
+| M2 | Antonio Uy | Core Auth Developer |
+| M3 | Joemarie Estologa | Security Engineer |
+| M4 | Stephen Pusta | UI/UX Designer |
+| M5 | Nicole James Landoy | Integration Specialist |
 
-## 🔗 Repository
-https://github.com/landoynicole4-design/secure_vault
+## 📁 Project Structure (Strict MVVM)
+lib/
+├── main.dart               # Entry point
+├── models/                 # Data Layer (POJOs)
+├── viewmodels/             # Business Logic
+├── views/                  # UI Only
+├── services/               # Firebase, Auth, Storage
+└── utils/                  # Constants, Validators
 
-## 📱 APK
-https://drive.google.com/file/d/1t2NScibruxtMShJ8Vz1Cm5i_UB-XzaHl/view?usp=drive_link
+## 🚀 Features
+- Email/Password Registration & Login
+- Google Sign-In (SSO)
+- Facebook Sign-In (SSO)
+- Biometric Authentication (Fingerprint)
+- Secure Token Storage (FlutterSecureStorage)
+- Profile Edit (Display Name)
+- Dark Mode Toggle
 
-## ✨ Features
-- Email & Password Authentication
-- Google Sign-In
-- Facebook Login ✅
-- Biometric (Fingerprint) Login
-- Secure Token Storage
-- Dark Mode Toggle (persists in settings) ✅
-
-## 🛠️ Tech Stack
-- Flutter
-- Firebase Authentication
-- Provider (State Management)
-- flutter_secure_storage
-- local_auth
-- Google Sign-In
-- Facebook Login SDK
+## 🔧 Setup
+1. Clone the repo
+2. Run flutter pub get
+3. Add your google-services.json in android/app/
+4. Run flutter run
