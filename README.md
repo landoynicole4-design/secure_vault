@@ -31,6 +31,7 @@ lib/
 - Profile Edit (Display Name)
 - Dark Mode Toggle
 
+
 ## 🔧 Setup
 1. Clone the repo
 2. Run flutter pub get
