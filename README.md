@@ -1,16 +1,35 @@
-# secure_vault
+# 🔐 Secure Vault
+A Flutter authentication app with Firebase.
 
-A new Flutter project.
+## 👥 Team Members & Roles
 
-## Getting Started
+| Member | Name | Role | Responsibilities |
+|--------|------|------|-----------------|
+| M1 | Christian Ville Ranque | Lead Architect & Navigation | Project setup, routing, state configuration |
+| M2 | Antonio Uy | Core Auth Developer | AuthViewModel, registration/login logic, state management |
+| M3 | Joemarie Estologa | Security Engineer | Secure storage, biometrics, password validation |
+| M4 | Stephen Pusta | UI/UX Designer | LoginView, RegisterView, ProfileView, UI feedback |
+| M5 | Nicole James Landoy | Integration Specialist | Google Sign-In, Facebook Login, QA & data persistence |
 
-This project is a starting point for a Flutter application.
+## 🔗 Repository
+https://github.com/landoynicole4-design/secure_vault
 
-A few resources to get you started if this is your first Flutter project:
+## 📱 APK
+https://drive.google.com/file/d/17cc_rxJE0-oc9LAvhyHgLF_hCIFQFZHI/view?usp=drive_link
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## ✨ Features
+- Email & Password Authentication
+- Google Sign-In
+- Facebook Login ✅
+- Biometric (Fingerprint) Login
+- Secure Token Storage
+- Dark Mode Toggle (persists in settings) ✅
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🛠️ Tech Stack
+- Flutter
+- Firebase Authentication
+- Provider (State Management)
+- flutter_secure_storage
+- local_auth
+- Google Sign-In
+- Facebook Login SDK
