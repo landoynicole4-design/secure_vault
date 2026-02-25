@@ -1,3 +1,15 @@
+/// StorageService — handles all secure local storage using FlutterSecureStorage.
+///
+/// Keys stored:
+/// - auth_token          : Firebase ID token
+/// - biometric_enabled   : whether biometric login is active
+/// - dark_mode           : user's theme preference
+/// - user_email          : saved email for biometric session restore
+/// - user_uid            : saved UID for biometric session restore
+///
+/// Integration by: Nicole James Landoy (M5)
+
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class StorageService {
