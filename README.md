@@ -15,7 +15,7 @@ A Flutter authentication app with Firebase.
 https://github.com/landoynicole4-design/secure_vault
 
 ## 📱 APK
-https://drive.google.com/file/d/17cc_rxJE0-oc9LAvhyHgLF_hCIFQFZHI/view?usp=drive_link
+https://drive.google.com/file/d/1t2NScibruxtMShJ8Vz1Cm5i_UB-XzaHl/view?usp=drive_link
 
 ## ✨ Features
 - Email & Password Authentication
