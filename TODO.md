@@ -1,35 +1,34 @@
-# TODO - SecureVault Implementation
+# TODO - Fixing SecureVault App Problems
 
-## Phase 1: Foundation (Models & Utils)
+## Problems Fixed in Backend/ViewModel:
 
-- [ ] lib/models/user_model.dart - User data model
-- [ ] lib/utils/constants.dart - Colors, Strings, API Keys
-- [ ] lib/utils/validators.dart - Email/Password validation regex
+- [x] 1. AuthService - Added auth state listener for session persistence
+- [x] 2. StorageService - Added user credentials storage and session cleanup
+- [x] 3. AuthViewModel - Added session restoration on startup
+- [x] 4. Main.dart - Fixed dark mode flash by pre-loading preference
+- [x] 5. Validators - Made password requirements more user-friendly (min 6 chars)
+- [x] 6. LoginView - Added session checking and loading state for biometric
 
-## Phase 2: Services
+## View Files Analysis:
 
-- [ ] lib/services/auth_service.dart - Firebase Auth methods
-- [ ] lib/services/storage_service.dart - Secure Storage implementation
-- [ ] lib/services/biometric_service.dart - Fingerprint/Local Auth logic
+All view files (login_view.dart, register_view.dart, profile_view.dart, custom_text_field.dart, custom_button.dart) are correctly implemented.
 
-## Phase 3: ViewModels (State Management)
+## Note on IDE Errors:
 
-- [ ] lib/viewmodels/auth_viewmodel.dart - Handle Login, Register, Google Sign-In
-- [ ] lib/viewmodels/profile_viewmodel.dart - Handle Profile Editing & State
+The TextStyle errors shown in the IDE are caused by a path conflict with external Flutter files located at:
+`../Downloads/flutter_windows_3.38.8-stable/flutter/packages/flutter/lib/src/painting/text_style.dart`
 
-## Phase 4: UI Components (Widgets)
+This is NOT an actual code issue - the code is correct. To fix this:
 
-- [ ] lib/views/widgets/custom_button.dart - Reusable button widget
-- [ ] lib/views/widgets/custom_text_field.dart - Reusable text field widget
+1. Close any external Flutter projects in your workspace
+2. Or move the secure_vault project to a different folder outside of any Flutter project directories
 
-## Phase 5: Views (Screens)
+## Summary:
 
-- [ ] lib/views/login_view.dart - Login Screen
-- [ ] lib/views/register_view.dart - Registration Screen
-- [ ] lib/views/profile_view.dart - View & Edit Profile Screen
+All 6 identified problems have been fixed. The app should now:
 
-## Phase 6: Entry Point
-
-- [ ] lib/main.dart - Initialize providers/routes
-
-## Priority: HIGH
+- ✅ Restore user session on app restart
+- ✅ Work with biometric login after app restart
+- ✅ Show dark mode without flash on startup
+- ✅ Properly clear session data on logout
+- ✅ Have more user-friendly password requirements

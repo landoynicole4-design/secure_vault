@@ -7,16 +7,10 @@ class Validators {
     return null;
   }
 
-  // Min 8 chars, 1 uppercase, 1 special character
+  // Min 6 chars - more user-friendly
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) return 'Password is required';
-    if (value.length < 8) return 'Password must be at least 8 characters';
-    if (!value.contains(RegExp(r'[A-Z]'))) {
-      return 'Password must contain at least 1 uppercase letter';
-    }
-    if (!value.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
-      return 'Password must contain at least 1 special character';
-    }
+    if (value.length < 6) return 'Password must be at least 6 characters';
     return null;
   }
 

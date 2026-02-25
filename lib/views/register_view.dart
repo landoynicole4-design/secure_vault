@@ -29,6 +29,110 @@ class _RegisterViewState extends State<RegisterView> {
     super.dispose();
   }
 
+  Future<void> _showSuccessModal(BuildContext context) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 42,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Account Created!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1E),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Your SecureVault account has been\nsuccessfully created.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6C6C70),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1C1C1E),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Continue to Profile',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleRegister(
+      BuildContext context, AuthViewModel authVM) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final success = await authVM.register(
+      displayName: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      if (!context.mounted) return;
+      await _showSuccessModal(context);
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.profile);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -67,8 +171,6 @@ class _RegisterViewState extends State<RegisterView> {
                       children: [
                         SizedBox(
                             height: MediaQuery.of(context).size.height * 0.08),
-
-                        // Shield icon + App name
                         Center(
                           child: Column(
                             children: [
@@ -112,8 +214,6 @@ class _RegisterViewState extends State<RegisterView> {
                           ),
                         ),
                         const SizedBox(height: 40),
-
-                        // Full Name
                         CustomTextField(
                           label: 'Full Name',
                           hint: AppStrings.fullName,
@@ -121,8 +221,6 @@ class _RegisterViewState extends State<RegisterView> {
                           validator: Validators.validateFullName,
                         ),
                         const SizedBox(height: 14),
-
-                        // Email
                         CustomTextField(
                           label: 'Email',
                           hint: AppStrings.email,
@@ -131,8 +229,6 @@ class _RegisterViewState extends State<RegisterView> {
                           validator: Validators.validateEmail,
                         ),
                         const SizedBox(height: 14),
-
-                        // Password
                         CustomTextField(
                           label: 'Password',
                           hint: AppStrings.password,
@@ -141,8 +237,6 @@ class _RegisterViewState extends State<RegisterView> {
                           validator: Validators.validatePassword,
                         ),
                         const SizedBox(height: 14),
-
-                        // Confirm Password
                         CustomTextField(
                           label: 'Confirm Password',
                           hint: AppStrings.confirmPassword,
@@ -152,30 +246,14 @@ class _RegisterViewState extends State<RegisterView> {
                               v, _passwordController.text),
                         ),
                         const SizedBox(height: 22),
-
-                        // Register Button
                         CustomButton(
                           text: AppStrings.register,
                           backgroundColor: const Color(0xFF1C1C1E),
                           textColor: Colors.white,
                           isLoading: authVM.isLoading,
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await authVM.register(
-                                fullName: _nameController.text.trim(),
-                                email: _emailController.text.trim(),
-                                password: _passwordController.text,
-                              );
-                              if (success && context.mounted) {
-                                Navigator.pushReplacementNamed(
-                                    context, AppRoutes.profile);
-                              }
-                            }
-                          },
+                          onPressed: () => _handleRegister(context, authVM),
                         ),
                         const SizedBox(height: 18),
-
-                        // Login link
                         Center(
                           child: GestureDetector(
                             onTap: () => Navigator.pop(context),

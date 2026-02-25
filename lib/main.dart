@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'; // ADD THIS
 import 'firebase_options.dart';
 import 'viewmodels/auth_viewmodel.dart';
 import 'viewmodels/profile_viewmodel.dart';
@@ -8,24 +9,49 @@ import 'views/login_view.dart';
 import 'views/register_view.dart';
 import 'views/profile_view.dart';
 import 'utils/constants.dart';
+import 'services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const SecureVaultApp());
+
+  // Initialize Facebook SDK - ADD THIS SECTION
+  await FacebookAuth.instance.webAndDesktopInitialize(
+    appId: "YOUR_FACEBOOK_APP_ID", // Replace with your actual Facebook App ID
+    cookie: true,
+    xfbml: true,
+    version: "v18.0",
+  );
+
+  final storageService = StorageService();
+  final isDarkMode = await storageService.getDarkMode();
+
+  runApp(SecureVaultApp(initialDarkMode: isDarkMode));
 }
 
-class SecureVaultApp extends StatelessWidget {
-  const SecureVaultApp({super.key});
+class SecureVaultApp extends StatefulWidget {
+  final bool initialDarkMode;
 
+  const SecureVaultApp({super.key, this.initialDarkMode = false});
+
+  @override
+  State<SecureVaultApp> createState() => _SecureVaultAppState();
+}
+
+class _SecureVaultAppState extends State<SecureVaultApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ChangeNotifierProvider(create: (_) => ProfileViewModel()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              ProfileViewModel()..setInitialDarkMode(widget.initialDarkMode),
+        ),
       ],
       child: Consumer<ProfileViewModel>(
         builder: (context, profileVM, _) {

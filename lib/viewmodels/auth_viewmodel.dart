@@ -11,11 +11,41 @@ class AuthViewModel extends ChangeNotifier {
 
   UserModel? _user;
   bool _isLoading = false;
+  bool _isInitializing = true;
   String? _errorMessage;
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
+  bool get isInitializing => _isInitializing;
   String? get errorMessage => _errorMessage;
+  bool get isLoggedIn => _user != null;
+
+  AuthViewModel() {
+    _initializeAuth();
+  }
+
+  Future<void> _initializeAuth() async {
+    try {
+      final currentUser = _authService.currentUser;
+      if (currentUser != null) {
+        try {
+          _user = await _authService.getUserProfile(currentUser.uid);
+        } catch (_) {
+          _user = UserModel(
+            uid: currentUser.uid,
+            displayName: currentUser.displayName ?? 'User',
+            email: currentUser.email ?? '',
+            photoUrl: currentUser.photoURL,
+          );
+        }
+      }
+    } catch (_) {
+      // Silently fail — user will need to log in manually
+    } finally {
+      _isInitializing = false;
+      notifyListeners();
+    }
+  }
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -37,9 +67,22 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Register
+  // ── Helpers ────────────────────────────────────────────────────────────────
+
+  /// Saves credentials + token after any successful sign-in.
+  Future<void> _postLoginSave(String uid, String email) async {
+    await _storageService.saveUserCredentials(uid: uid, email: email);
+    try {
+      final token =
+          await _authService.getIdToken().timeout(const Duration(seconds: 5));
+      if (token != null) await _storageService.saveToken(token);
+    } catch (_) {}
+  }
+
+  // ── Register ───────────────────────────────────────────────────────────────
+
   Future<bool> register({
-    required String fullName,
+    required String displayName,
     required String email,
     required String password,
   }) async {
@@ -47,17 +90,11 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(true);
       _setError(null);
       _user = await _authService.registerWithEmail(
-        fullName: fullName,
+        displayName: displayName,
         email: email,
         password: password,
       );
-      try {
-        final token =
-            await _authService.getIdToken().timeout(const Duration(seconds: 5));
-        if (token != null) await _storageService.saveToken(token);
-      } catch (_) {
-        // Non-critical — token save failure shouldn't block registration
-      }
+      await _postLoginSave(_user!.uid, email);
       return true;
     } on Exception catch (e) {
       _setError(_parseError(e.toString()));
@@ -67,7 +104,8 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Login
+  // ── Email Login ────────────────────────────────────────────────────────────
+
   Future<bool> login({
     required String email,
     required String password,
@@ -79,13 +117,7 @@ class AuthViewModel extends ChangeNotifier {
         email: email,
         password: password,
       );
-      try {
-        final token =
-            await _authService.getIdToken().timeout(const Duration(seconds: 5));
-        if (token != null) await _storageService.saveToken(token);
-      } catch (_) {
-        // Non-critical
-      }
+      await _postLoginSave(_user!.uid, email);
       return true;
     } on Exception catch (e) {
       _setError(_parseError(e.toString()));
@@ -95,17 +127,14 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Google Sign-In
+  // ── Google Sign-In ─────────────────────────────────────────────────────────
+
   Future<bool> signInWithGoogle() async {
     try {
       _setLoading(true);
       _setError(null);
       _user = await _authService.signInWithGoogle();
-      try {
-        final token =
-            await _authService.getIdToken().timeout(const Duration(seconds: 5));
-        if (token != null) await _storageService.saveToken(token);
-      } catch (_) {}
+      await _postLoginSave(_user!.uid, _user!.email);
       return true;
     } on Exception catch (e) {
       _setError(_parseError(e.toString()));
@@ -115,17 +144,14 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Facebook Sign-In
+  // ── Facebook Sign-In ───────────────────────────────────────────────────────
+
   Future<bool> signInWithFacebook() async {
     try {
       _setLoading(true);
       _setError(null);
       _user = await _authService.signInWithFacebook();
-      try {
-        final token =
-            await _authService.getIdToken().timeout(const Duration(seconds: 5));
-        if (token != null) await _storageService.saveToken(token);
-      } catch (_) {}
+      await _postLoginSave(_user!.uid, _user!.email);
       return true;
     } on Exception catch (e) {
       _setError(_parseError(e.toString()));
@@ -135,22 +161,40 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Biometric login
+  // ── Biometric Login ────────────────────────────────────────────────────────
+
   Future<bool> loginWithBiometrics() async {
     try {
       _setLoading(true);
       _setError(null);
-      final authenticated = await _biometricService.authenticate();
-      if (!authenticated) {
-        _setError('Biometric authentication failed');
+
+      // Uses authenticateWithReason() for specific, user-friendly error messages
+      final authError = await _biometricService.authenticateWithReason();
+      if (authError != null) {
+        _setError(authError);
         return false;
       }
+
+      // Biometric passed — restore session from Firebase
       final currentUser = _authService.currentUser;
       if (currentUser == null) {
-        _setError('No saved session. Please login with password.');
+        _setError(
+            'No saved session found. Please log in with your password first.');
         return false;
       }
-      _user = await _authService.getUserProfile(currentUser.uid);
+
+      try {
+        _user = await _authService.getUserProfile(currentUser.uid);
+      } catch (_) {
+        // Fallback if Firestore fetch fails
+        _user = UserModel(
+          uid: currentUser.uid,
+          displayName: currentUser.displayName ?? 'User',
+          email: currentUser.email ?? '',
+          photoUrl: currentUser.photoURL,
+        );
+      }
+
       return true;
     } on Exception catch (e) {
       _setError(_parseError(e.toString()));
@@ -160,13 +204,26 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
-  // Logout
+  // ── Logout ─────────────────────────────────────────────────────────────────
+
   Future<void> logout() async {
-    await _authService.logout();
-    await _storageService.deleteToken();
+    final biometricEnabled = await _storageService.isBiometricEnabled();
+
+    if (biometricEnabled) {
+      // Biometric is ON — keep Firebase session alive so biometric
+      // login can restore it next time. Only clear local app state.
+      await _storageService.clearSession();
+    } else {
+      // Biometric is OFF — fully sign out of Firebase
+      await _authService.logout();
+      await _storageService.clearSession();
+    }
+
     _user = null;
     notifyListeners();
   }
+
+  // ── Error Parser ───────────────────────────────────────────────────────────
 
   String _parseError(String error) {
     if (error.contains('email-already-in-use')) {

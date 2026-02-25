@@ -6,6 +6,8 @@ class StorageService {
   static const _tokenKey = 'auth_token';
   static const _biometricKey = 'biometric_enabled';
   static const _darkModeKey = 'dark_mode';
+  static const _userEmailKey = 'user_email';
+  static const _userUidKey = 'user_uid';
 
   // ── Token ──────────────────────────────
   Future<void> saveToken(String token) async {
@@ -18,6 +20,28 @@ class StorageService {
 
   Future<void> deleteToken() async {
     await _storage.delete(key: _tokenKey);
+  }
+
+  // ── User Session (for biometric login) ──
+  Future<void> saveUserCredentials({
+    required String uid,
+    required String email,
+  }) async {
+    await _storage.write(key: _userUidKey, value: uid);
+    await _storage.write(key: _userEmailKey, value: email);
+  }
+
+  Future<String?> getSavedUserUid() async {
+    return await _storage.read(key: _userUidKey);
+  }
+
+  Future<String?> getSavedUserEmail() async {
+    return await _storage.read(key: _userEmailKey);
+  }
+
+  Future<void> clearUserCredentials() async {
+    await _storage.delete(key: _userUidKey);
+    await _storage.delete(key: _userEmailKey);
   }
 
   // ── Biometrics ─────────────────────────
@@ -43,5 +67,13 @@ class StorageService {
   // ── Clear All ──────────────────────────
   Future<void> clearAll() async {
     await _storage.deleteAll();
+  }
+
+  // ── Logout cleanup ────────────────────
+  Future<void> clearSession() async {
+    // Clear token but keep biometric setting and dark mode preference
+    await _storage.delete(key: _tokenKey);
+    await _storage.delete(key: _userUidKey);
+    await _storage.delete(key: _userEmailKey);
   }
 }

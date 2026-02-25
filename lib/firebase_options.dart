@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDyhkn3-Is-06g6ug99Y_SdjNraXkw3F_A',
-    appId: '1:932367678456:android:66d6d1d9496c0b4660f40d',
+    appId: '1:932367678456:android:7e121949f940688a60f40d',
     messagingSenderId: '932367678456',
     projectId: 'vault-ae5cb',
     storageBucket: 'vault-ae5cb.firebasestorage.app',
@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '932367678456',
     projectId: 'vault-ae5cb',
     storageBucket: 'vault-ae5cb.firebasestorage.app',
+    androidClientId: '932367678456-blf0is0ecfi8e5g4dfkfktamchlkr8di.apps.googleusercontent.com',
     iosClientId: '932367678456-nusbl6slaoc95klv1cjodif783oq23at.apps.googleusercontent.com',
     iosBundleId: 'com.example.secureVault',
   );
@@ -74,6 +75,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '932367678456',
     projectId: 'vault-ae5cb',
     storageBucket: 'vault-ae5cb.firebasestorage.app',
+    androidClientId: '932367678456-blf0is0ecfi8e5g4dfkfktamchlkr8di.apps.googleusercontent.com',
     iosClientId: '932367678456-nusbl6slaoc95klv1cjodif783oq23at.apps.googleusercontent.com',
     iosBundleId: 'com.example.secureVault',
   );
@@ -87,4 +89,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'vault-ae5cb.firebasestorage.app',
     measurementId: 'G-HDHG1ZEREE',
   );
+
 }

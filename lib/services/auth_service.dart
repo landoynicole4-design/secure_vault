@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,11 +10,19 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
   User? get currentUser => _auth.currentUser;
+
+  void initializeAuthStateListener(Function(User?) onAuthChanged) {
+    _auth.authStateChanges().listen((User? user) {
+      onAuthChanged(user);
+    });
+  }
 
   // Register with email and password
   Future<UserModel> registerWithEmail({
-    required String fullName,
+    required String displayName,
     required String email,
     required String password,
   }) async {
@@ -27,13 +36,13 @@ class AuthService {
 
     final user = UserModel(
       uid: credential.user!.uid,
-      fullName: fullName,
+      displayName: displayName,
       email: email,
     );
 
     await Future.wait([
       _firestore.collection('users').doc(user.uid).set(user.toMap()),
-      credential.user!.updateDisplayName(fullName),
+      credential.user!.updateDisplayName(displayName),
     ]);
 
     return user;
@@ -91,7 +100,7 @@ class AuthService {
     if (!doc.exists) {
       final user = UserModel(
         uid: firebaseUser.uid,
-        fullName: firebaseUser.displayName ?? 'Google User',
+        displayName: firebaseUser.displayName ?? 'Google User',
         email: firebaseUser.email ?? '',
         photoUrl: firebaseUser.photoURL,
       );
@@ -126,7 +135,7 @@ class AuthService {
     if (!doc.exists) {
       final user = UserModel(
         uid: firebaseUser.uid,
-        fullName: firebaseUser.displayName ?? 'Facebook User',
+        displayName: firebaseUser.displayName ?? 'Facebook User',
         email: firebaseUser.email ?? '',
         photoUrl: firebaseUser.photoURL,
       );
@@ -150,24 +159,19 @@ class AuthService {
   // Update display name
   Future<void> updateDisplayName(String uid, String newName) async {
     await Future.wait([
-      _firestore.collection('users').doc(uid).update({'fullName': newName}),
+      _firestore.collection('users').doc(uid).update({'displayName': newName}),
       _auth.currentUser!.updateDisplayName(newName),
     ]);
   }
 
-  // FIX: each provider has its own try/catch so one failure never blocks others.
-  // Facebook removed from logout — requires full native Android setup (SHA keys,
-  // AndroidManifest config) which throws MissingPluginException without it.
   Future<void> logout() async {
     try {
       await _googleSignIn.signOut();
     } catch (_) {}
 
-    // Firebase sign out — always runs last, this is the critical one
     await _auth.signOut();
   }
 
-  // Get ID token
   Future<String?> getIdToken() async {
     return await _auth.currentUser?.getIdToken();
   }

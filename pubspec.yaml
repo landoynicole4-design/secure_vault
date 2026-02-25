@@ -31,6 +31,12 @@ dependencies:
   # Biometrics
   local_auth: ^2.3.0
 
+  # Image Picker (for profile photo)
+  image_picker: ^1.1.2
+
+  # Cached Network Image (for loading profile photos from Firebase)
+  cached_network_image: ^3.4.1
+
   # Icons
   cupertino_icons: ^1.0.8
 
@@ -41,3 +47,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Add your assets here when ready
+  # assets:
+  #   - assets/google_logo.png
+  #   - assets/facebook_logo.png

@@ -18,6 +18,7 @@ class _LoginViewState extends State<LoginView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _biometricAvailable = false;
+  bool _isCheckingBiometric = true;
 
   @override
   void initState() {
@@ -26,8 +27,22 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _checkBiometric() async {
-    final enabled = await StorageService().isBiometricEnabled();
-    if (mounted) setState(() => _biometricAvailable = enabled);
+    try {
+      final enabled = await StorageService().isBiometricEnabled();
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = enabled;
+          _isCheckingBiometric = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _biometricAvailable = false;
+          _isCheckingBiometric = false;
+        });
+      }
+    }
   }
 
   @override
@@ -35,6 +50,199 @@ class _LoginViewState extends State<LoginView> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _showSuccessModal(BuildContext context, String name) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE8F5E9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 42,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Welcome Back!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1E),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'You have successfully logged in${name.isNotEmpty ? ',\n$name' : ''}.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6C6C70),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1C1C1E),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Go to Profile',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showErrorModal(BuildContext context, String message) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 30,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEBEE),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.cancel_rounded,
+                  color: Color(0xFFC62828),
+                  size: 42,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Login Failed',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1E),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6C6C70),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC62828),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Try Again',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleLogin(BuildContext context, AuthViewModel authVM) async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final success = await authVM.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      final name = authVM.user?.displayName ?? '';
+      if (!context.mounted) return;
+      await _showSuccessModal(context, name);
+      if (context.mounted) {
+        // ← fixed
+        Navigator.pushReplacementNamed(context, AppRoutes.profile);
+      }
+    } else {
+      final error = authVM.errorMessage ??
+          'Incorrect email or password. Please try again.';
+      authVM.clearError();
+      if (!context.mounted) return;
+      await _showErrorModal(context, error);
+    }
   }
 
   @override
@@ -47,20 +255,15 @@ class _LoginViewState extends State<LoginView> {
       body: SafeArea(
         child: Consumer<AuthViewModel>(
           builder: (context, authVM, _) {
-            if (authVM.errorMessage != null) {
+            if (authVM.isInitializing) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (authVM.isLoggedIn) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(authVM.errorMessage!),
-                    backgroundColor: AppColors.error,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    margin: const EdgeInsets.all(16),
-                  ),
-                );
-                authVM.clearError();
+                Navigator.pushReplacementNamed(context, AppRoutes.profile);
               });
+              return const Center(child: CircularProgressIndicator());
             }
 
             return Center(
@@ -75,8 +278,6 @@ class _LoginViewState extends State<LoginView> {
                       children: [
                         SizedBox(
                             height: MediaQuery.of(context).size.height * 0.10),
-
-                        // Shield icon + App name
                         Center(
                           child: Column(
                             children: [
@@ -99,6 +300,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                               const SizedBox(height: 16),
                               const Text(
+                                // ← fixed
                                 AppStrings.appName,
                                 style: TextStyle(
                                   fontSize: 26,
@@ -109,6 +311,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                               const SizedBox(height: 4),
                               const Text(
+                                // ← fixed
                                 AppStrings.tagline,
                                 style: TextStyle(
                                   fontSize: 12,
@@ -120,8 +323,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                         const SizedBox(height: 52),
-
-                        // Email field
                         CustomTextField(
                           label: 'Email or username',
                           hint: 'Enter email or username',
@@ -130,8 +331,6 @@ class _LoginViewState extends State<LoginView> {
                           validator: Validators.validateEmail,
                         ),
                         const SizedBox(height: 14),
-
-                        // Password field
                         CustomTextField(
                           label: 'Password',
                           hint: 'Enter password',
@@ -142,29 +341,14 @@ class _LoginViewState extends State<LoginView> {
                               : null,
                         ),
                         const SizedBox(height: 22),
-
-                        // Login Button
                         CustomButton(
                           text: AppStrings.login,
                           backgroundColor: const Color(0xFF1C1C1E),
                           textColor: Colors.white,
                           isLoading: authVM.isLoading,
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await authVM.login(
-                                email: _emailController.text.trim(),
-                                password: _passwordController.text,
-                              );
-                              if (success && context.mounted) {
-                                Navigator.pushReplacementNamed(
-                                    context, AppRoutes.profile);
-                              }
-                            }
-                          },
+                          onPressed: () => _handleLogin(context, authVM),
                         ),
                         const SizedBox(height: 18),
-
-                        // Create account link
                         Center(
                           child: GestureDetector(
                             onTap: () => Navigator.pushNamed(
@@ -181,8 +365,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                         const SizedBox(height: 32),
-
-                        // Divider
                         const Row(
                           children: [
                             Expanded(
@@ -193,9 +375,7 @@ class _LoginViewState extends State<LoginView> {
                               child: Text(
                                 'Or login with',
                                 style: TextStyle(
-                                  color: Color(0xFF6C6C70),
-                                  fontSize: 12,
-                                ),
+                                    color: Color(0xFF6C6C70), fontSize: 12),
                               ),
                             ),
                             Expanded(
@@ -204,8 +384,6 @@ class _LoginViewState extends State<LoginView> {
                           ],
                         ),
                         const SizedBox(height: 18),
-
-                        // Facebook Button
                         CustomButton(
                           text: AppStrings.signInWithFacebook,
                           backgroundColor: AppColors.facebook,
@@ -215,15 +393,26 @@ class _LoginViewState extends State<LoginView> {
                               color: Colors.white, size: 20),
                           onPressed: () async {
                             final success = await authVM.signInWithFacebook();
-                            if (success && context.mounted) {
-                              Navigator.pushReplacementNamed(
-                                  context, AppRoutes.profile);
+                            if (!mounted) return;
+                            if (success) {
+                              final name = authVM.user?.displayName ?? '';
+                              if (!context.mounted) return;
+                              await _showSuccessModal(context, name);
+                              if (context.mounted) {
+                                // ← fixed
+                                Navigator.pushReplacementNamed(
+                                    context, AppRoutes.profile);
+                              }
+                            } else {
+                              final error = authVM.errorMessage ??
+                                  'Facebook sign-in failed. Please try again.';
+                              authVM.clearError();
+                              if (!context.mounted) return;
+                              await _showErrorModal(context, error);
                             }
                           },
                         ),
                         const SizedBox(height: 10),
-
-                        // Google Button
                         CustomButton(
                           text: AppStrings.signInWithGoogle,
                           backgroundColor: const Color(0xFFF5F5F5),
@@ -232,16 +421,27 @@ class _LoginViewState extends State<LoginView> {
                           leadingWidget: const _GoogleIcon(),
                           onPressed: () async {
                             final success = await authVM.signInWithGoogle();
-                            if (success && context.mounted) {
-                              Navigator.pushReplacementNamed(
-                                  context, AppRoutes.profile);
+                            if (!mounted) return;
+                            if (success) {
+                              final name = authVM.user?.displayName ?? '';
+                              if (!context.mounted) return;
+                              await _showSuccessModal(context, name);
+                              if (context.mounted) {
+                                // ← fixed
+                                Navigator.pushReplacementNamed(
+                                    context, AppRoutes.profile);
+                              }
+                            } else {
+                              final error = authVM.errorMessage ??
+                                  'Google sign-in failed. Please try again.';
+                              authVM.clearError();
+                              if (!context.mounted) return;
+                              await _showErrorModal(context, error);
                             }
                           },
                         ),
                         const SizedBox(height: 10),
-
-                        // Biometric Button
-                        if (_biometricAvailable)
+                        if (!_isCheckingBiometric && _biometricAvailable)
                           CustomButton(
                             text: 'Login with Fingerprint',
                             backgroundColor: const Color(0xFFF5F5F5),
@@ -251,13 +451,25 @@ class _LoginViewState extends State<LoginView> {
                             onPressed: () async {
                               final success =
                                   await authVM.loginWithBiometrics();
-                              if (success && context.mounted) {
-                                Navigator.pushReplacementNamed(
-                                    context, AppRoutes.profile);
+                              if (!mounted) return;
+                              if (success) {
+                                final name = authVM.user?.displayName ?? '';
+                                if (!context.mounted) return;
+                                await _showSuccessModal(context, name);
+                                if (context.mounted) {
+                                  // ← fixed
+                                  Navigator.pushReplacementNamed(
+                                      context, AppRoutes.profile);
+                                }
+                              } else {
+                                final error = authVM.errorMessage ??
+                                    'Biometric authentication failed.';
+                                authVM.clearError();
+                                if (!context.mounted) return;
+                                await _showErrorModal(context, error);
                               }
                             },
                           ),
-
                         SizedBox(
                             height: MediaQuery.of(context).size.height * 0.06),
                       ],
